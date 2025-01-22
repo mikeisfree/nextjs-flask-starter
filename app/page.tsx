@@ -3,114 +3,184 @@ import Link from 'next/link'
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <Link href="/api/python">
-            <code className="font-mono font-bold">api/index.py</code>
-          </Link>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+      <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .filters {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .results {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      select,
+      input {
+        padding: 8px;
+        margin-right: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 200px;
+      }
+      select {
+        width: 400px;
+      }
+      button {
+        padding: 8px 16px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .notice-card {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+      }
+      .notice-details {
+        margin-top: 10px;
+      }
+      .detail-row {
+        margin: 5px 0;
+      }
+      .error {
+        color: red;
+        padding: 10px;
+        background: #ffe6e6;
+        border-radius: 4px;
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>e-Zamówienia API Browser</h1>
+
+      <div class="filters">
+        <select id="tenderType">
+          <option value="">Select tender type...</option></select
+        ><br /><br />
+        <input type="date" id="dateFrom" required />
+        <input type="date" id="dateTo" required />
+        <button onclick="fetchNotices(1)">Search</button>
       </div>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+      <div class="results" id="results"></div>
+    </div>
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+    <script>
+      async function init() {
+        const response = await fetch("/api/tender-types");
+        const types = await response.json();
+        document.getElementById("tenderType").innerHTML =
+          '<option value="">Select tender type...</option>' +
+          types
+            .map((type) => `<option value="${type}">${type}</option>`)
+            .join("");
+      }
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+      async function fetchNotices(page) {
+        const tenderType = document.getElementById("tenderType").value;
+        const dateFrom = document.getElementById("dateFrom").value;
+        const dateTo = document.getElementById("dateTo").value;
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
+        if (!dateFrom || !dateTo) {
+          document.getElementById("results").innerHTML =
+            '<div class="error">Please select dates</div>';
+          return;
+        }
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+        try {
+          document.getElementById("results").innerHTML = "Loading...";
+          const url = `/api/notices?page=${page}&tenderType=${encodeURIComponent(
+            tenderType
+          )}&dateFrom=${dateFrom}&dateTo=${dateTo}`;
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.error) {
+            document.getElementById(
+              "results"
+            ).innerHTML = `<div class="error">${data.error}</div>`;
+            return;
+          }
+
+          displayResults(data);
+        } catch (error) {
+          document.getElementById(
+            "results"
+          ).innerHTML = `<div class="error">${error.message}</div>`;
+        }
+      }
+
+      function displayResults(data) {
+        console.log("Received data:", data);
+        const resultsDiv = document.getElementById("results");
+
+        if (!data.items || data.items.length === 0) {
+          resultsDiv.innerHTML = "No results found";
+          return;
+        }
+
+        resultsDiv.innerHTML = data.items
+          .map(
+            (item) => `
+                <div class="notice-card">
+                    <h3>${item.Title || "No title"}</h3>
+                    <div class="notice-details">
+                        <div class="detail-row">BZP Number: ${
+                          item.BzpNumber || "N/A"
+                        }</div>
+                        <div class="detail-row">Organization: ${
+                          item.OrganizationName || "N/A"
+                        }</div>
+                        <div class="detail-row">City: ${
+                          item.OrganizationCity || "N/A"
+                        }</div>
+                        <div class="detail-row">Province: ${
+                          item.OrganizationProvince || "N/A"
+                        }</div>
+                        <div class="detail-row">Tender Type: ${
+                          item.TenderType || "N/A"
+                        }</div>
+                        <div class="detail-row">Submission Date: ${
+                          item.SubmissionOffersDate
+                            ? new Date(
+                                item.SubmissionOffersDate
+                              ).toLocaleString()
+                            : "N/A"
+                        }</div>
+                        ${
+                          item.Details
+                            ? `<div class="detail-row"><a href="${item.Details}" target="_blank">View Details</a></div>`
+                            : ""
+                        }
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      init();
+    </script>
+  </body>
   )
 }
