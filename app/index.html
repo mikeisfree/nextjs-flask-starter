@@ -1,1 +1,186 @@
 
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>e-Zamówienia API Browser</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .filters {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .results {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      select,
+      input {
+        padding: 8px;
+        margin-right: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 200px;
+      }
+      select {
+        width: 400px;
+      }
+      button {
+        padding: 8px 16px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .notice-card {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+      }
+      .notice-details {
+        margin-top: 10px;
+      }
+      .detail-row {
+        margin: 5px 0;
+      }
+      .error {
+        color: red;
+        padding: 10px;
+        background: #ffe6e6;
+        border-radius: 4px;
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>e-Zamówienia API Browser</h1>
+
+      <div class="filters">
+        <select id="tenderType">
+          <option value="">Select tender type...</option></select
+        ><br /><br />
+        <input type="date" id="dateFrom" required />
+        <input type="date" id="dateTo" required />
+        <button onclick="fetchNotices(1)">Search</button>
+      </div>
+
+      <div class="results" id="results"></div>
+    </div>
+
+    <script>
+      async function init() {
+        const response = await fetch("/api/tender-types");
+        const types = await response.json();
+        document.getElementById("tenderType").innerHTML =
+          '<option value="">Select tender type...</option>' +
+          types
+            .map((type) => `<option value="${type}">${type}</option>`)
+            .join("");
+      }
+
+      async function fetchNotices(page) {
+        const tenderType = document.getElementById("tenderType").value;
+        const dateFrom = document.getElementById("dateFrom").value;
+        const dateTo = document.getElementById("dateTo").value;
+
+        if (!dateFrom || !dateTo) {
+          document.getElementById("results").innerHTML =
+            '<div class="error">Please select dates</div>';
+          return;
+        }
+
+        try {
+          document.getElementById("results").innerHTML = "Loading...";
+          const url = `/api/notices?page=${page}&tenderType=${encodeURIComponent(
+            tenderType
+          )}&dateFrom=${dateFrom}&dateTo=${dateTo}`;
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.error) {
+            document.getElementById(
+              "results"
+            ).innerHTML = `<div class="error">${data.error}</div>`;
+            return;
+          }
+
+          displayResults(data);
+        } catch (error) {
+          document.getElementById(
+            "results"
+          ).innerHTML = `<div class="error">${error.message}</div>`;
+        }
+      }
+
+      function displayResults(data) {
+        console.log("Received data:", data);
+        const resultsDiv = document.getElementById("results");
+
+        if (!data.items || data.items.length === 0) {
+          resultsDiv.innerHTML = "No results found";
+          return;
+        }
+
+        resultsDiv.innerHTML = data.items
+          .map(
+            (item) => `
+                <div class="notice-card">
+                    <h3>${item.Title || "No title"}</h3>
+                    <div class="notice-details">
+                        <div class="detail-row">BZP Number: ${
+                          item.BzpNumber || "N/A"
+                        }</div>
+                        <div class="detail-row">Organization: ${
+                          item.OrganizationName || "N/A"
+                        }</div>
+                        <div class="detail-row">City: ${
+                          item.OrganizationCity || "N/A"
+                        }</div>
+                        <div class="detail-row">Province: ${
+                          item.OrganizationProvince || "N/A"
+                        }</div>
+                        <div class="detail-row">Tender Type: ${
+                          item.TenderType || "N/A"
+                        }</div>
+                        <div class="detail-row">Submission Date: ${
+                          item.SubmissionOffersDate
+                            ? new Date(
+                                item.SubmissionOffersDate
+                              ).toLocaleString()
+                            : "N/A"
+                        }</div>
+                        ${
+                          item.Details
+                            ? `<div class="detail-row"><a href="${item.Details}" target="_blank">View Details</a></div>`
+                            : ""
+                        }
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      init();
+    </script>
+  </body>
+</html>
